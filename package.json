@@ -1,0 +1,16 @@
+{
+  "name": "studytracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "demo.js",
+  "scripts": {
+    "test": "node --localstorage-file=/tmp/jest-ls ./node_modules/.bin/jest --verbose"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "jest": "^30.3.0"
+  }
+}

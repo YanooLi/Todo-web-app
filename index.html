@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyTracker — Manual Test UI</title>
+  <script src="studyTracker.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.75rem;
+      margin-bottom: 1.5rem;
+      color: #38bdf8;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 0.25rem;
+      margin-top: 0.75rem;
+    }
+
+    label:first-of-type {
+      margin-top: 0;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"] {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus {
+      border-color: #38bdf8;
+    }
+
+    button {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.6rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    .btn-start {
+      background: #22c55e;
+      color: #052e16;
+    }
+
+    .btn-end {
+      background: #f97316;
+      color: #431407;
+    }
+
+    .btn-stats {
+      background: #38bdf8;
+      color: #0c4a6e;
+    }
+
+    .btn-reset {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    /* Status badge */
+    .status-bar {
+      text-align: center;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-idle {
+      background: #1e293b;
+      border: 1px dashed #475569;
+      color: #94a3b8;
+    }
+
+    .status-studying {
+      background: #14532d;
+      border: 1px solid #22c55e;
+      color: #86efac;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 0.7rem 1.4rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      pointer-events: none;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      z-index: 100;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    #toast.success {
+      background: #22c55e;
+      color: #052e16;
+    }
+
+    #toast.error {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    /* Stats display */
+    #stats-output {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 120px;
+      max-height: 400px;
+      overflow-y: auto;
+      color: #a5f3fc;
+      line-height: 1.5;
+    }
+
+    /* Session log */
+    #session-log {
+      list-style: none;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    #session-log li {
+      padding: 0.45rem 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+    }
+
+    #session-log li:last-child {
+      border-bottom: none;
+    }
+
+    .log-subject {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    .log-time {
+      color: #94a3b8;
+    }
+
+    .empty-state {
+      color: #475569;
+      font-style: italic;
+      font-size: 0.82rem;
+    }
+
+    /* Actions row */
+    .actions-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 StudyTracker Test UI</h1>
+
+  <!-- Active status -->
+  <div class="container">
+    <div class="full-width">
+      <div id="status" class="status-bar status-idle">No active session</div>
+    </div>
+
+    <!-- Start Studying -->
+    <div class="card">
+      <h2>▶️ Start Studying</h2>
+      <label for="start-subject">Subject</label>
+      <input type="text" id="start-subject" placeholder='e.g. "Math"' />
+
+      <label for="start-date">Date</label>
+      <input type="date" id="start-date" />
+
+      <label for="start-time">Time</label>
+      <input type="time" id="start-time" />
+
+      <button class="btn-start" onclick="handleStart()">Start Studying</button>
+    </div>
+
+    <!-- End Studying -->
+    <div class="card">
+      <h2>⏹️ End Studying</h2>
+      <label for="end-date">Date</label>
+      <input type="date" id="end-date" />
+
+      <label for="end-time">Time</label>
+      <input type="time" id="end-time" />
+
+      <button class="btn-end" onclick="handleEnd()">End Studying</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="card full-width">
+      <h2>📊 Stats</h2>
+      <div class="actions-row" style="margin-bottom: 0.75rem;">
+        <button class="btn-stats" onclick="handleStats()">Get Stats</button>
+        <button class="btn-reset" onclick="handleReset()">Reset All</button>
+      </div>
+      <div id="stats-output" class="empty-state">Click "Get Stats" to view results…</div>
+    </div>
+
+    <!-- Session log -->
+    <div class="card full-width">
+      <h2>🕓 Session Log</h2>
+      <ul id="session-log">
+        <li class="empty-state">No sessions recorded yet.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <script>
+    // ── Initialise tracker ──────────────────────────────────────
+    const tracker = createStudyTracker();
+
+    // Pre-fill date/time inputs with "now"
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+    document.getElementById('start-date').value = todayStr;
+    document.getElementById('start-time').value = timeStr;
+    document.getElementById('end-date').value = todayStr;
+    document.getElementById('end-time').value = timeStr;
+
+    // ── Toast helper ────────────────────────────────────────────
+    let toastTimer;
+    function toast(message, type = 'success') {
+      const el = document.getElementById('toast');
+      el.textContent = message;
+      el.className = `${type} show`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+    }
+
+    // ── Status badge ────────────────────────────────────────────
+    let currentSubject = null;
+
+    function updateStatus() {
+      const el = document.getElementById('status');
+      if (currentSubject) {
+        el.textContent = `📖 Studying: ${currentSubject}`;
+        el.className = 'status-bar status-studying';
+      } else {
+        el.textContent = 'No active session';
+        el.className = 'status-bar status-idle';
+      }
+    }
+
+    // ── Session log ─────────────────────────────────────────────
+    const logEntries = [];
+
+    function renderLog() {
+      const ul = document.getElementById('session-log');
+      if (logEntries.length === 0) {
+        ul.innerHTML = '<li class="empty-state">No sessions recorded yet.</li>';
+        return;
+      }
+      ul.innerHTML = logEntries
+        .map(
+          (e, i) =>
+            `<li><span class="log-subject">${escapeHtml(e.subject)}</span> — <span class="log-time">${e.start} → ${e.end}</span></li>`
+        )
+        .join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(text));
+      return div.innerHTML;
+    }
+
+    // ── Handlers ────────────────────────────────────────────────
+    let pendingStart = null; // remember start info for the log
+
+    function handleStart() {
+      const subject = document.getElementById('start-subject').value;
+      const date = document.getElementById('start-date').value;
+      const time = document.getElementById('start-time').value;
+
+      try {
+        tracker.startStudying({ subject, date, time });
+        currentSubject = subject.trim();
+        pendingStart = { subject: currentSubject, date, time };
+        updateStatus();
+        toast(`Started studying "${currentSubject}"`);
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    }
+
+    function handleEnd() {
+      const date = document.getElementById('end-date').value;
+      const time = document.getElementById('end-time').value;
+
+      try {
+        tracker.endStudying({ date, time });
+        logEntries.unshift({
+          subject: pendingStart?.subject ?? '?',
+          start: `${pendingStart?.date ?? '?'} ${pendingStart?.time ?? '?'}`,
+          end: `${date} ${time}`,
+        });
+        toast(`Ended session for "${currentSubject}"`);
+        currentSubject = null;
+        pendingStart = null;
+        updateStatus();
+        renderLog();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    }
+
+    function handleStats() {
+      try {
+        const stats = tracker.getStats();
+        document.getElementById('stats-output').textContent = JSON.stringify(stats, null, 2);
+        document.getElementById('stats-output').classList.remove('empty-state');
+        toast('Stats refreshed');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    }
+
+    function handleReset() {
+      tracker.reset();
+      currentSubject = null;
+      pendingStart = null;
+      logEntries.length = 0;
+      updateStatus();
+      renderLog();
+      document.getElementById('stats-output').textContent = 'Click "Get Stats" to view results…';
+      document.getElementById('stats-output').classList.add('empty-state');
+      toast('Tracker reset');
+    }
+  </script>
+</body>
+</html>
