@@ -17,6 +17,8 @@ tracker.endStudying({ date: '2026-03-12', time: '15:45' });
 // Print stats
 console.log(JSON.stringify(tracker.getStats(), null, 2));
 
+console.log("hi from alex");
+
 // Reset and confirm it's cleared
 tracker.reset();
 console.log('\nAfter reset:');
