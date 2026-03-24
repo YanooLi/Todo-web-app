@@ -1,0 +1,42 @@
+name: Append Approved PR Log
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  append-log:
+    # Only run when the PR was actually merged.
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Append merged PR entry to README
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          MERGED_AT: ${{ github.event.pull_request.merged_at }}
+        run: |
+          DATE=$(date -u -d "$MERGED_AT" +"%Y-%m-%d")
+          echo "- $PR_AUTHOR $DATE $PR_TITLE" >> README.md
+
+      - name: Commit and push changes
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "No README changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: append approved PR log for #${{ github.event.pull_request.number }}"
+          git push
